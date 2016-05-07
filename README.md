@@ -555,25 +555,18 @@ for (var i = 0; i < array.length; ++i) {
 Vamos a reescribir el código de una forma funcional
 
 ```js
-var array = [1, 2, 3];
-var result = _.chain(array)
+const array = [1, 2, 3];
+const result = _.chain(array)
  .map(square)
  .map(inc)
  .filter(isEven)
  .head(1)
  .value();
 
-function square(i) {
-  return i * i;
-}
+const square = i => i * i;
+const inc = i => i +1;
+const isEven = i => i %2 === 0;
 
-function inc(i) {
-  return i + 1;
-}
-
-function isEven(i) {
-  return i % 2 === 0;
-}
 ```
 
 Tenemos un trozo de código más compacto y legible. Además hemos creados algunas funciones como square o inc que podremos reutilizar
@@ -582,18 +575,169 @@ Tenemos un trozo de código más compacto y legible. Además hemos creados algun
 
 
 ```js
-var clients = [
+const clients = [
   {firstName: "Princess", lastName: "Hernández", balance: 50},
   {firstName: "Darth", lastName: "Vader", balance: -20},
   {firstName: "Luke", lastName: "Skywalker", balance: -30},
   {firstName: "Han", lastName: "Solo", balance: 100}
 ];
 
-describe("functional", function () {
+describe("functional", () => {
 
-  it("should return the full name of client with balance < 0", function() {
+  it("should return the full name of client with balance < 0", () => {
     expect(badClients(clients)).to.eql(["Darth Vader", "Luke Skywalker"])
   });
 
 });
 ```
+
+## Async programming
+
+La programación asíncrona ha sido una de las claves del éxito y la rapidez de NodeJS. El modelo de programación asíncrona de javascript es monohilo, tanto en el navegador como en NodeJS. Esto quiere decir que dos códigos javascript no se pueden ejecutar simultáneamente, se tienen que ejecutar uno después del siguiente. Esto al principio puede resultar chocante: ¿Cómo un servidor web que debe atender muchas peticiones simultáneas puede ser monohilo? La clave está en el EventLoop.
+
+![](http://i.stack.imgur.com/02udF.jpg)
+
+Los navegadores también tienen un único hilo de ejecución. Aunque esto está cambiando con la introducción de los [Web Workers](http://www.html5rocks.com/en/tutorials/workers/basics/).
+
+Las operaciones asíncronas más comunes cuando estamos trabajando en la web son
+
+* `setTimeout(cb, ms)`
+* `setInterval(cb, ms)`
+* Peticiones ajax
+
+En node, la mayor parte de la api trabaja con funciones asíncronas. Por ejemplo para leer un fichero en node
+
+```js
+const fs = require("fs");
+fs.readFile("file", (err, data) => {
+  if (err) console.error(err);
+  console.log(data);
+});
+```
+
+El principal problema con los callbacks es lo que se denomina el callback hell. Supongamos que tenemos que hacer un proceso que lea varios ficheros y luego haga algún procesamiento.
+
+
+```js
+function processMultipleFiles(cb) {
+    fs.readFile('file1.txt', function (err, file1) {
+      if (err) cb(err);
+      fs.readFile('file2.txt', function (err, file2) {
+        if (err) cb(err);
+        fs.readFile('file3.txt', function (err, file3) {
+          if (err) cb(err);
+          fs.readFile('file4.txt', function (err, file4) {
+            if (err) cb(err);
+            fs.readFile('file5.txt', function (err, file5) {
+              if (err) cb(err);
+              process(file1, file2, file3, file4, file5);
+            });
+          });
+        });
+      });
+    });
+}
+```
+
+Lo cierto es que no es un código sencillo de mantener. Además el manejo de los errores es propenso errores.
+
+#### Ejercicio
+
+Piensa en una forma ejecutar dos métodos asíncronos y esperar que los dos hayan terminado.
+
+
+### Promises
+
+ES6 trae una nueva abstracción para trabajar con código asíncrono, las Promises. Una promesa representa una operación que no se ha completado todavía, pero que se va a completar en el futuro. Las promesas permiten añadir manejadores que se ejecutaran la promesa haya sido resuelta (con éxito o con error).
+
+
+Para crear una promesa
+
+```js
+function timeoutPromise(ms) {
+    return new Promise((resolve, reject) => {
+        setTimeout(resolve, 500);
+    });
+}
+```
+
+A la hora de ejecutar una promesa, debemos añadir los manejadores para poder reaccionar al resultado de la promesa
+
+```js
+    timeoutPromise(500)
+      .then(() => console.log("success"))
+      .catch(() => console.error("error"));
+```
+
+Las promesas se pueden encadenar para obtener una ejecución secuencial
+
+```js
+    timeoutPromise(500)
+      .then(() => timeoutPromise(1500))
+      .then(() => console.log("executed after 2000ms"))
+      .catch(() => console.error("error"));
+```
+
+En este caso, el método catch se ejecutará si alguna de las dos promesas falla.
+
+Si queremos ejecutar varías promesas en paralelo. Podemos utilizar el método `all`.
+
+```js
+Promise.all([timeoutPromise(500), timeoutPromise(1000)])
+    .then(() => console.log("executed after 1000ms"));
+```
+
+Las promesas forman parte del standard, pero todavía no están implementadas en todos los navegadores. Por lo tanto es posible que te haga falta utilizar un polyfill. Una librería que además añade funcionalidades muy útiles para trabajar con promesas es [bluebird](http://bluebirdjs.com/).
+
+El código equivalente al ejemplo de leer varios ficheros en node, utilizando promesas sería el siguiente.
+
+
+```js
+const fs = require("fs");
+const Promise = require("bluebird");
+
+function readFilePromise(filename) {
+  return new Promise((resolve, reject) => {
+    fs.readFile(filename, (err, content) => {
+        if (err) return reject(err);
+        resolve(content);
+    })
+  });
+}
+
+function processMultipleFiles() {
+    const files = ["file1.txt", "file2.txt", "file3.txt", "file4.txt", "file5.txt"];
+    return Promise.map(files, readFilePromise).then(processFiles);
+}
+```
+
+El método `readFilePromise` utiliza un patrón muy común que permite convertir un método que trabaja con callbacks en un método que devuelve una promesa. Bluebird también tiene una implementación de este método `Promise.promisify`.
+
+
+# Ejercicio de promesas
+
+`fetch` es un nuevo método que están implementado los navegadores para trabajar con peticiones http. Para usarlo en NodeJS nos hace falta utilizar la librería `isomorphic-fetch`.
+
+```js
+npm install --save isomorphic-fetch
+```
+
+```js
+require('isomorphic-fetch');
+
+fetch('http://offline-news-api.herokuapp.com/stories')
+    .then(response => {
+        if (response.status >= 400) {
+            throw new Error("Bad response from server")
+        }
+        return response.json();
+    })
+    .then(body => console.log(body)
+    .catch(err => console.error(err));
+```
+
+Prueba a instalar la librería y a hacer peticiones a alguna API. Por ejemplo, puedes probar con alguna de estas APIs públicas https://github.com/toddmotto/public-apis.
+
+
+
+
