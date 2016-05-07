@@ -738,6 +738,108 @@ fetch('http://offline-news-api.herokuapp.com/stories')
 
 Prueba a instalar la librería y a hacer peticiones a alguna API. Por ejemplo, puedes probar con alguna de estas APIs públicas https://github.com/toddmotto/public-apis.
 
+## Generators
 
+Los generadores son funciones que puede salir y volver a reentrar después. El contexto se mantendrá durante todas las reentradas a la función.
+
+
+```js
+function* idMaker(){
+  var index = 0;
+  while(index < 3)
+    yield index++;
+}
+
+var gen = idMaker();
+
+console.log(gen.next().value); // 0
+console.log(gen.next().value); // 1
+console.log(gen.next().value); // 2
+console.log(gen.next().value); // undefined
+```
+
+Implementación de fibonacci
+
+```js
+function* fibonacci(){
+  var fn1 = 0;
+  var fn2 = 1;
+  while (true){
+    var current = fn1;
+    fn1 = fn2;
+    fn2 = current + fn1;
+    var reset = yield current;
+    if (reset){
+        fn1 = 0;
+        fn2 = 1;
+    }
+  }
+}
+
+var sequence = fibonacci();
+console.log(sequence.next().value);     // 0
+console.log(sequence.next().value);     // 1
+console.log(sequence.next().value);     // 1
+console.log(sequence.next().value);     // 2
+console.log(sequence.next().value);     // 3
+console.log(sequence.next().value);     // 5
+console.log(sequence.next().value);     // 8
+```
+
+Los generadores pueden ser utilizados para trabajar con código asíncrono como si fuera código síncrono. Una de las librerías que permite esto es [co](https://github.com/tj/co).
+
+```js
+co(function* () {
+  var result = yield Promise.resolve(true);
+  return result;
+}).then(function (value) {
+  console.log(value);
+}, function (err) {
+  console.error(err.stack);
+});
+```
+
+
+El código que utilizamos antes para hacer llamadas a la API, sería el siguiente
+
+```js
+co(function* () {
+  try {
+    const response = yield fetch('http://offline-news-api.herokuapp.com/stories');
+    if (response.status >= 400) {
+    throw new Error("Bad resposne from server");
+    }
+    const body = yield response.json();
+    console.log(body);
+  } catch(e) {
+    console.error(e)
+  }
+})
+```
+
+
+## Async/Await
+
+Async/Await es simplemente syntactic sugar, por debajo está implementado con generadores de manejar similar a co.
+
+La palabra clave `async` se utiliza en funciones para identificar funciones asíncrona. Estas funciones devuelven promesas. La palabra clave `await` se utiliza para esperar a que termine la ejecución de una promesa, de manera similar a como utilizábamos `yield` en los generadores.
+
+```js
+async function doRequest() {
+    const response = await fetch('http://offline-news-api.herokuapp.com/stories');
+    if (response.status >= 400) {
+      throw new Error("Bad resposne from server");
+    }
+    return yield response.json();
+}
+```
+
+Es importante resaltar que la funciones async devuelve promesas. Por lo tanto para llamar a una función de este tipo lo haremos de la manera habitual
+
+```js
+doRequest()
+    .then(result => console.log(result))
+    .catch(err => console.error(err))
+```
 
 
