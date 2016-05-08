@@ -8,7 +8,7 @@
 * [Async programming](#async-programming)
 * [Webpack](#webpack)
 * [Landing Page Optimization](#landing-page-optimization)
-* Flexbox
+* [Flexbox](#flexbox)
 * React / React Router
 * Redux
 * React Native
