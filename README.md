@@ -9,9 +9,10 @@
 * [Webpack](#webpack)
 * [Landing Page Optimization](#landing-page-optimization)
 * [Flexbox](#flexbox)
-* React / React Router
-* Redux
-* React Native
+* [React](#react)
+* [React Router](#react-router)
+* [Redux](#redux)
+* [React Native](#react-native)
 
 
 ## Intro
@@ -1261,7 +1262,7 @@ npm install @jongleberry/react-star-rating --save
 ```
 
 
-## React Router
+# React Router
 
 En una SPA(Single Page Application) un componente es el Router que permite gestionar las diferentes rutas de nuestra aplicación. En este tutorial vamos a utilizar [react-router](https://github.com/reactjs/react-router).
 
@@ -1372,5 +1373,213 @@ ReactDOM.render(<Routes/>, document.getElementById("container"));
 Añade una nueva ruta a la aplicación
 
 Lee la documentación sobre las [IndexRoute](https://github.com/reactjs/react-router/blob/master/docs/guides/IndexRoutes.md) y añade una IndexRoute a la aplicación.
+
+# Redux
+
+http://axelhzf.com/talk-new-ideas-web-app/#/25
+
+http://axelhzf.com/react-redux-table/
+
+## Ejercicio
+
+Clona el repositorio de la react-redux-table y añade una nueva funcionalidad.
+
+# React Native
+
+React Native permite renderizar componentes de react en componentes nativos en lugar de en el DOM.
+
+Vamos a trabajar con aplicaciones para iOS, por lo tanto te hace falta tener OSX.
+
+Instalación
+
+```
+npm install -g react-native-cli
+```
+
+Creación de un proyecto nuevo
+
+```
+react-native init ReactNativeExample
+cd ReactNativeExample
+react-native run-ios
+```
+
+
+Modifica el fichero index.ios.js
+
+```js
+import React, { Component } from 'react';
+import {AppRegistry, StyleSheet, Text, View, Image} from 'react-native';
+
+class ReactNativeExample extends Component {
+  render() {
+    return (
+      <View style={styles.container}>
+        <Image style={styles.image} source={{uri: "http://axelhzf.com/talk-react-at-treexor/images/logo.png"}} />
+        <Text style={styles.text}>
+          Hi treexor
+        </Text>
+      </View>
+    );
+  }
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#000407'
+  },
+  image: {
+    width: 300,
+    height: 379,
+    backgroundColor: "transparent"
+  },
+  text: {
+    fontSize: 40,
+    textAlign: 'center',
+    color: "#A7C829"
+  }
+});
+
+AppRegistry.registerComponent('ReactNativeExample', () => ReactNativeExample);
+```
+
+Trabajar con formularios se hace una manera similar a como se hace en la web
+
+```js
+import React, { Component } from 'react';
+import {AppRegistry, StyleSheet, Text, View, TextInput} from 'react-native';
+
+class ReactNativeExample extends Component {
+
+  state = {
+    username: "",
+    password: ""
+  };
+
+  render() {
+    const {username, password} = this.state;
+    return (
+      <View style={styles.container}>
+        <TextInput
+          style={styles.input}
+          placeholder="Username"
+          onChangeText={(text) => this.setState({username: text})}
+          value={username}
+        />
+        <TextInput
+          style={styles.input}
+          placeholder="Password"
+          secureTextEntry={true}
+          onChangeText={(text) => this.setState({password: text})}
+          value={password}
+        />
+      </View>
+    )
+  }
+
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingLeft: 10,
+    paddingRight: 10,
+    backgroundColor: "#158ACF"
+  },
+  input: {
+    height: 40,
+    color: "#020609",
+    backgroundColor: "#F9F9F9",
+    borderColor: '#146490',
+    borderWidth: 2,
+    marginBottom: 10,
+    padding: 10
+  }
+});
+
+AppRegistry.registerComponent('ReactNativeExample', () => ReactNativeExample);
+```
+
+
+
+Uno de los componentes más habituales en las aplicaciones móviles son las tablas.
+
+```js
+import React, { Component } from 'react';
+import {AppRegistry, StyleSheet, Text, View, Image, ListView, RecyclerViewBackedScrollView} from 'react-native';
+
+class ReactNativeExample extends Component {
+
+  state = {
+    dataSource: new ListView.DataSource({rowHasChanged: (r1, r2) => r1 !== r2})
+  };
+
+  componentDidMount() {
+    this.fetchStories();
+  }
+
+  fetchStories() {
+    fetch('http://netflixroulette.net/api/api.php?director=Quentin%20Tarantino')
+      .then(response => response.json())
+      .then(movies => {
+        const {dataSource} = this.state;
+        this.setState({dataSource: dataSource.cloneWithRows(movies)})
+      })
+      .catch(err => console.error(err));
+  }
+
+  renderRow(movie) {
+    return (
+      <View style={styles.row}>
+        <Image style={styles.rowImage} source={{uri: movie.poster}}/>
+        <Text style={styles.rowText}>{movie.show_title}</Text>
+        <Text style={styles.rowDescription} numberOfLines={3}>{movie.summary}</Text>
+      </View>
+    )
+  }
+
+  render() {
+    return (
+      <ListView
+        dataSource={this.state.dataSource}
+        renderRow={this.renderRow}
+        renderScrollComponent={props => <RecyclerViewBackedScrollView style={styles.scrollView} {...props} />}
+        renderSeparator={(sectionID, rowID) => <View key={`${sectionID}-${rowID}`} style={styles.separator}/>}
+      />
+    );
+  }
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1
+  },
+  rowImage: {
+    height: 150
+  },
+  rowText: {
+    color: "#546E7A",
+    padding: 10,
+    fontWeight: "bold"
+  },
+  rowDescription: {
+    color: "#546E7A",
+    padding: 10,
+    paddingTop: 0
+  },
+  separator: {
+    height: 1,
+    backgroundColor: "#ccc"
+  }
+});
+
+AppRegistry.registerComponent('ReactNativeExample', () => ReactNativeExample);
+```
+
 
 
