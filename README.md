@@ -1037,3 +1037,340 @@ ReactDOM.render(<HelloWorld />, document.getElementById('container'));
 ```
 
 En este ejemplo estamos trabajando con módulos y con jsx. Por lo tanto vamos a tener que utilizar webpack para poder probarlo en el navegador.
+
+package.json
+
+```json
+{
+  "dependencies": {
+    "react": "^15.0.2",
+    "react-dom": "^15.0.2"
+  },
+  "devDependencies": {
+    "babel-core": "^6.8.0",
+    "babel-loader": "^6.2.4",
+    "babel-preset-es2015": "^6.6.0",
+    "babel-preset-react": "^6.5.0",
+    "babel-preset-stage-0": "^6.5.0",
+    "css-loader": "^0.23.1",
+    "style-loader": "^0.13.1",
+    "webpack": "^1.13.0",
+    "webpack-dev-server": "^1.14.1"
+  }
+}
+```
+
+webpack.config.js
+
+```js
+module.exports = {
+  entry: "./src/main.js",
+  output: {
+    path: "assets",
+    filename: "bundle.js",
+    publicPath: "assets"
+  },
+  module: {
+    loaders: [
+      {
+        test: /\.js$/,
+        loader: "babel",
+        exclude: /node_modules/,
+        query: {presets: ["es2015", "stage-0", "react"]}
+      }
+    ]
+  }
+};
+```
+
+```
+npm install
+webpack-dev-server
+```
+
+Los componentes pueden tener propiedades, es la forma de pasar datos de componentes padre a componentes hijos
+
+HelloWorld.js
+```js
+export default class Hello extends React.Component {
+  render() {
+    const {name} = this.props
+    return <h1>Hello {name}</h1>;
+  }
+}
+```
+
+main.js
+```js
+<HelloWorld name="Treexor"/>;
+```
+
+Es buena idea especificar los tipos de las propiedades para que quienes usan el componente sepan qué pueden pasar. Para ellos se usa la propiedad propTypes.
+
+
+```js
+import React, {PropTypes} from "react";
+
+export default class Hello extends React.Component {
+
+  static propTypes = {
+    name: PropTypes.string.isRequired
+  };
+
+  render() {
+    const {name} = this.props;
+    return <h1>Hello {name}</h1>;
+  }
+}
+```
+
+De esta forma, cuando React no esté en modo producción, hará la comprobación de los tipos de propiedades. En caso de que tengamos un error, nos mostrará un warning.
+
+```
+bundle.js:1100 Warning: Failed propType: Required prop `name` was not specified in `Hello`.
+```
+
+Además de propiedades, los componentes puede tener estado interno
+
+
+```js
+import React, {PropTypes} from "react";
+
+export default class HelloWorld extends React.Component {
+  state = {
+    counter: 0
+  };
+
+  increment = () => {
+    this.setState({counter: this.state.counter + 1});
+  };
+
+  render() {
+    const {counter} = this.state;
+    return (
+      <div>
+        <h1>Counter {counter}</h1>
+        <button onClick={this.increment}>Increment</button>
+      </div>
+    );
+  }
+}
+```
+
+Cada vez que se cambien las props o el state. El método render se va a invocar automáticamente.
+
+Los componentes tienen un ciclo de vida
+
+https://facebook.github.io/react/docs/component-specs.html#lifecycle-methods
+
+Podemos usar el ciclo de vida, por ejemplo para ejecutar acciones cuando un componente se vaya a mostrar
+
+```js
+import React, {PropTypes} from "react";
+
+export default class HelloWorld extends React.Component {
+  state = {
+    movies: []
+  };
+
+  componentDidMount() {
+    this.fetchStories();
+  }
+
+  fetchStories() {
+    fetch('http://netflixroulette.net/api/api.php?director=Quentin%20Tarantino')
+      .then(response => response.json())
+      .then(movies => this.setState({movies}))
+      .catch(err => console.error(err));
+  }
+
+  render() {
+    const {movies} = this.state;
+    if (!movies) {
+      return <p>Loading...</p>
+    }
+
+    const moviesHtml = movies.map((movie, index) => (
+      <div key={index}>
+        <h1>{movie.show_title}</h1>
+        <p>{movie.summary}</p>
+        <div><img src={movie.poster}/></div>
+      </div>
+    ));
+
+    return <div>{moviesHtml}</div>;
+  }
+}
+```
+
+Trabajar con formularios require más código boilerplate que cuando se hace con Angular.js. Esto es debido a que React utiliza One-way data binding. Esto quiere decir que la información únicamente fluye en una dirección. La ventaja del one-way data binding es que permite que nuestros componentes sean totalmente deterministas y más sencillos de analizar.
+
+```js
+import React, {PropTypes} from "react";
+
+export default class Form extends React.Component {
+
+  state = {
+    name: "",
+    surname: ""
+  };
+
+  onChangeName = (e) => {
+    this.setState({name: e.target.value});
+  };
+
+  onChangeSurname = (e) => {
+    this.setState({surname: e.target.value});
+  };
+
+  onSubmit = (e) => {
+    e.preventDefault();
+    console.log(this.state);
+  };
+
+  render() {
+    const {name, surname} = this.state;
+    return (
+      <form onSubmit={this.onSubmit}>
+        <input type="text" value={name} onChange={this.onChangeName}/>
+        <input type="text" value={surname} onChange={this.onChangeSurname}/>
+        <button>Submit</button>
+      </form>
+    );
+  }
+
+}
+```
+
+## Ejercicio
+
+Crea un formulario que te permita valorar todas las películas de Tarantino.
+
+![](img/movie-rating.png)
+
+La api para listar las películas es la misma que hemos utilizado anteriormente
+
+http://netflixroulette.net/api/api.php?director=Quentin%20Tarantino
+
+Puedes utilizar el componente [react-star-rating](https://www.npmjs.com/package/@jongleberry/react-star-rating).
+
+Es importante que cuando lo instales uses esta version que es compatible con React 15
+
+```
+npm install @jongleberry/react-star-rating --save
+```
+
+
+## React Router
+
+En una SPA(Single Page Application) un componente es el Router que permite gestionar las diferentes rutas de nuestra aplicación. En este tutorial vamos a utilizar [react-router](https://github.com/reactjs/react-router).
+
+```
+npm install --save react-router
+```
+
+
+Ejemplo de código
+
+```js
+import React, {PropTypes} from "react";
+import ReactDOM from "react-dom";
+import {Router, Route, Link, browserHistory} from 'react-router'
+import _ from "lodash";
+
+import "./main.css";
+
+const users = [
+  {id: "1", name: "Kylo Ren", poster: "/" + require("./img/kylo.jpg")},
+  {id: "2", name: "Rey", poster: "/" + require("./img/rey.jpg")},
+  {id: "3", name: "Finn", poster: "/" + require("./img/finn.jpg")}
+];
+
+class Users extends React.Component {
+  render() {
+    return (
+      <div>
+        <h1>Users</h1>
+        <div className="master">
+          <ul>
+            {users.map(user => <li key={user.id}><Link to={`/user/${user.id}`}>{user.name}</Link></li>)}
+          </ul>
+        </div>
+        <div className="detail">
+          {this.props.children}
+        </div>
+      </div>
+    )
+  }
+}
+
+class User extends React.Component {
+
+  render() {
+    const user = _.find(users, {id: this.props.params.userId});
+    return (
+      <div>
+        <h2>{user.name}</h2>
+        <img src={user.poster}/>
+      </div>
+    )
+  }
+}
+
+class About extends React.Component {
+
+  render() {
+    return <h1>About</h1>
+  }
+
+}
+
+class App extends React.Component {
+
+  render() {
+    return (
+      <div>
+        <ul>
+          <li><Link to="about">About</Link></li>
+          <li><Link to="users">Users</Link></li>
+        </ul>
+        <div>{this.props.children}</div>
+      </div>
+    )
+  }
+
+}
+
+class NoMatch extends React.Component {
+  render() {
+    return <h1>404</h1>
+  }
+}
+
+class Routes extends React.Component {
+  render() {
+    return (
+      <Router history={browserHistory}>
+        <Route path="/" component={App}>
+          <Route path="about" component={About}/>
+          <Route path="users" component={Users}>
+            <Route path="/user/:userId" component={User}/>
+          </Route>
+          <Route path="*" component={NoMatch}/>
+        </Route>
+      </Router>
+    )
+  }
+}
+
+ReactDOM.render(<Routes/>, document.getElementById("container"));
+```
+
+
+## Ejercicio
+
+Añade una nueva ruta a la aplicación
+
+Lee la documentación sobre las [IndexRoute](https://github.com/reactjs/react-router/blob/master/docs/guides/IndexRoutes.md) y añade una IndexRoute a la aplicación.
+
+
