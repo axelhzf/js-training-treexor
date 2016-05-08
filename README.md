@@ -1581,5 +1581,68 @@ const styles = StyleSheet.create({
 AppRegistry.registerComponent('ReactNativeExample', () => ReactNativeExample);
 ```
 
+En el caso de utilizar librerías externas con react native. Depende de la librería que estemos usando puede que tengamos que añadir código nativo al proyecto.
 
+Vamos a hacer un ejemplo añadiendo la siguiente librería
 
+https://github.com/lelandrichardson/react-native-parallax-view
+
+```
+npm install react-native-parallax-view --save
+```
+
+```js
+import React, { Component } from 'react';
+import {AppRegistry, StyleSheet, Text, View, Image} from 'react-native';
+import ParallaxView from 'react-native-parallax-view';
+
+class ReactNativeExample extends Component {
+
+  header = (
+    <View style={styles.header}>
+      <Text style={styles.headerText}>
+        This is the header text
+      </Text>
+    </View>
+  );
+
+  render() {
+    return (
+      <ParallaxView
+        ref={component => this._scrollView = component}
+        backgroundSource={{ uri: "http://i.imgur.com/mEVXC36.jpg" }}
+        windowHeight={300}
+        header={this.header}>
+      <Text style={styles.text}>
+        Lorem ipsum dolor sit amet, magna assum officiis ut duo, audire elaboraret in cum. Praesent periculis nam cu, an dicunt detracto nam. Nec salutandi iracundia ut, mea ea probo detraxit, ferri vituperatoribus est eu. Populo nemore qualisque vis te, at numquam persequeris duo.
+      </Text>
+      </ParallaxView>
+    );
+  }
+}
+
+const styles = StyleSheet.create({
+  header: {
+    flex: 1,
+    flexDirection: 'column',
+    justifyContent: 'flex-end',
+    paddingHorizontal: 20,
+    paddingVertical: 24
+  },
+  headerText: {
+    fontSize: 30,
+    fontWeight: 'bold',
+    color: '#353535'
+  },
+  text: {
+    fontSize: 20,
+    padding: 20
+  }
+});
+
+AppRegistry.registerComponent('ReactNativeExample', () => ReactNativeExample);
+```
+
+## Ejercicio
+
+Crea tu propia aplicación
