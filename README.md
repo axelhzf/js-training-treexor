@@ -1,15 +1,15 @@
 # Treexor Javascript training
 
-Content:
-* Javascript gotchas
-* Testing with Javascript: Mocha + chai
-* ES6
-* Functional programming
-* Async programming
-* Build tools: Webpack + gulp
+* [Intro](#intro)
+* [Javascript gotchas](#javascript-gotchas)
+* [Testing](#testing)
+* [ES6/ES2015](#es6es2015)
+* [Functional programming](#functional-programming)
+* [Async programming](#async-programming)
+* [Webpack](#webpack)
+* [Landing Page Optimization](#landing-page-optimization)
 * Flexbox
 * React / React Router
-* Landing Page Optimization
 * Redux
 * React Native
 
@@ -361,7 +361,7 @@ count();
 count();
 ````
 
-## Javascript testing
+## Testing
 
 Para realizar los ejercicios vamos a hacer testing. De esta forma vamos a comprobar si nuestro código es correcto o no. Para haer testing vamos a utilizar 3 librerías:
 
@@ -842,4 +842,157 @@ doRequest()
     .catch(err => console.error(err))
 ```
 
+## Webpack
 
+Webpack es un module bundler. Se encarga de coger módulos con sus dependencias y generar assets estáticos que representan esos módulos.
+
+![](http://webpack.github.io/assets/what-is-webpack.png)
+
+La alternativa a webpack es [browserify](http://browserify.org/)
+
+A través de una serie de loaders, webpack va a aplicar una serie de transformaciones a los módulos que nos va a permitir utilizarlos desde el navegador.
+
+Vamos a ver un ejemplo utilizando el loader de babel. Supongamos que tenemos dos ficheros
+
+helloWorld.js
+
+```js
+export default () => {
+  console.log("Hello World");
+}
+```
+
+main.js
+```js
+import helloWorld from "./helloWorld";
+
+helloWorld();
+```
+
+Ahora instalamos webpack y el loader de babel
+
+```
+npm install webpack babel-loader babel-core babel-preset-es2015 --save-dev
+```
+
+Esta sería la configuración básica de babel
+
+```js
+module.exports = {
+  entry: "./src/main.js",
+  output: {
+    path: "assets",
+    filename: "bundle.js",
+    publicPath: "assets"
+  },
+  module: {
+    loaders: [
+      {
+        test: /\.js$/,
+        loader: "babel",
+        exclude: /node_modules/,
+        query: {presets: ["es2015"]}
+      }
+    ]
+  }
+};
+```
+
+Al ejecutar el comando webpack, nuestros módulos se compilaran en el fichero `assets/bundle.js`
+
+```
+λ ~/dev/js-training-treexor/exercises/webpack/ master* webpack
+Hash: 53a87c4466b93c9a5a78
+Version: webpack 1.13.0
+Time: 511ms
+    Asset     Size  Chunks             Chunk Names
+bundle.js  1.86 kB       0  [emitted]  main
+    + 2 hidden modules
+```
+
+Una herramienta útil mientras estamos desarrollando es el webpack-dev-server
+
+```
+npm install webpack-dev-server --save-dev
+webpack-dev-server -d
+open http://localhost:8080
+```
+
+`webpack-dev-server` se quedará en modo watch y cada vez que se modifique un fichero volverá a generar el bundle. La opción `-d` permite generar los source maps.
+
+
+Vamos a ver cómo utilizar otro bundle para trabajar con ficheros css.
+
+Crea el fichero css
+
+main.css
+```css
+body {
+    background-color: red;
+}
+```
+
+Añade el require para el fichero css
+
+helloWorld.js
+```js
+import "./main.css";
+
+export default () => {
+  console.log("Hello World");
+}
+```
+
+Añade el loader para el css
+
+```
+npm install style-loader css-loader --save-dev
+```
+
+Modifica la configuración de webpack para usar el nuevo loader
+
+```js
+module.exports = {
+  entry: "./src/main.js",
+  output: {
+    path: "assets",
+    filename: "bundle.js",
+    publicPath: "assets"
+  },
+  module: {
+    loaders: [
+      {
+        test: /\.js$/,
+        loader: "babel",
+        exclude: /node_modules/,
+        query: {presets: ["es2015"]}
+      },
+      {
+        test: /\.css$/,
+        loaders: ["style", "css"]
+      }
+    ]
+  }
+};
+```
+
+Si probamos de nuevo la página, veremos que los estilos se cargan mediante javascript.
+Puede que prefiramos crear un fichero .css separado. Para ello podemos utilizar el [extract text plugin](https://github.com/webpack/extract-text-webpack-plugin)
+
+## Ejercicio
+
+Prueba a utilizar el `extract-text-plugin` para crear un fichero separado con los .css
+
+Prueba a utilizar un loader para cargar imágenes: [image-webpack-loader](https://github.com/tcoopman/image-webpack-loader).
+
+Para incluir la imagen tendrás que usar un código como este
+
+```js
+import treexorLogo from "./treexor.png";
+document.getElementById("container").innerHTML = `<img src="${treexorLogo}"/>`;
+```
+
+## Landing Page Optimization
+
+https://github.com/Tuguusl/netlion-frontend/blob/develop/signups/webpack.config.js
+https://github.com/Tuguusl/netlion-frontend/blob/develop/signups/gulpfile.js
