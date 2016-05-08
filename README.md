@@ -996,3 +996,12 @@ document.getElementById("container").innerHTML = `<img src="${treexorLogo}"/>`;
 
 https://github.com/Tuguusl/netlion-frontend/blob/develop/signups/webpack.config.js
 https://github.com/Tuguusl/netlion-frontend/blob/develop/signups/gulpfile.js
+
+# Flexbox
+
+Flexbox son una serie de propiedades nuevas de css que permite maquetar de una forma más sencilla. Muchos de los hacks que hacíamos antes con `float` ya no son necesarios.
+
+¿Por qué enseñar flexbox en un curso de javascript? Básicamente porque es la forma que vamos a tener para maquetar cuando trabajemos con ReactNative. Asi que es importante que dominemos bien flexbox.
+
+http://www.sketchingwithcss.com/samplechapter/cheatsheet.html
+http://the-echoplex.net/flexyboxes
