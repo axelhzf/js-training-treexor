@@ -1005,3 +1005,35 @@ Flexbox son una serie de propiedades nuevas de css que permite maquetar de una f
 
 http://www.sketchingwithcss.com/samplechapter/cheatsheet.html
 http://the-echoplex.net/flexyboxes
+
+# React
+
+React es una librería Javascript para construir interfaces de usuario.
+
+> REACT IS ALL ABOUT MODULAR AND COMPOSABLE COMPONENTS.
+
+Vamos a crear nuestro primero módulo en React.
+
+helloWorld.js
+```js
+import React from "react";
+
+export default class HelloWorld extends React.Component {
+
+  render() {
+    return <h1>Hello World</h1>;
+  }
+
+}
+```
+
+main.js
+```js
+import React from "react";
+import ReactDOM from "react-dom";
+import HelloWorld from "./HelloWorld";
+
+ReactDOM.render(<HelloWorld />, document.getElementById('container'));
+```
+
+En este ejemplo estamos trabajando con módulos y con jsx. Por lo tanto vamos a tener que utilizar webpack para poder probarlo en el navegador.
