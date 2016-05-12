@@ -453,14 +453,14 @@ var stub = sinon.stub(obj, "method", function () {
     return "the method was replaced"
 });
 var result = obj.method();
-expect(stub).to.be.true;
+expect(stub.called).to.be.true;
 expect(result).to.equal("the method was replaced");
 ```
 
 Los *Mocks* se comportan Stubs pero harán fallar los tests si no se usan como estaban programados.
 
 ```js
-var mock = sinon.stub(obj, "method", function () {
+var mock = sinon.mock(obj, "method", function () {
     return "the method was replaced"
 });
 var result = obj.method();
