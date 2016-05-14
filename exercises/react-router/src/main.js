@@ -18,7 +18,7 @@ class Users extends React.Component {
         <h1>Users</h1>
         <div className="master">
           <ul>
-            {users.map(user => <li key={user.id}><Link to={`/user/${user.id}`}>{user.name}</Link></li>)}
+            {users.map(user => <li key={user.id}><Link to={`/users/${user.id}`}>{user.name}</Link></li>)}
           </ul>
         </div>
         <div className="detail">
@@ -56,8 +56,8 @@ class App extends React.Component {
     return (
       <div>
         <ul>
-          <li><Link to="about">About</Link></li>
-          <li><Link to="users">Users</Link></li>
+          <li><Link to="/about">About</Link></li>
+          <li><Link to="/users">Users</Link></li>
         </ul>
         <div>{this.props.children}</div>
       </div>
@@ -77,9 +77,9 @@ class Routes extends React.Component {
     return (
       <Router history={browserHistory}>
         <Route path="/" component={App}>
-          <Route path="about" component={About}/>
-          <Route path="users" component={Users}>
-            <Route path="/user/:userId" component={User}/>
+          <Route path="/about" component={About}/>
+          <Route path="/users" component={Users}>
+            <Route path="/users/:userId" component={User}/>
           </Route>
           <Route path="*" component={NoMatch}/>
         </Route>
